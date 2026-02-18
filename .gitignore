@@ -38,6 +38,7 @@ Thumbs.db
 .vscode/
 .idea/
 .cursor/
+.gemini/
 
 # React Router generated
 .react-router/
