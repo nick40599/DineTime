@@ -14,6 +14,7 @@ RUN npm run build
 # ---------- runtime stage ----------
 FROM node:20-bookworm-slim AS runtime
 WORKDIR /app
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 ENV PORT=3000
 
