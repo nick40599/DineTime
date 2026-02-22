@@ -35,9 +35,9 @@ jobs:
       - name: Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.EC2_TEST_HOST }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: ${{ secrets.EC2_TEST_SSH_KEY }}
           script: |
             set -e
             cd /opt/shopify-app
