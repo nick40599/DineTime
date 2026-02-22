@@ -45,9 +45,17 @@ jobs:
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ secrets.GHCR_USER }}" --password-stdin
 
             docker compose pull
-            docker compose up -d
 
-            # Prisma migrations (recommended)
-            docker compose exec -T app npx prisma migrate deploy
+            # Start only db + caddy first
+            docker compose up -d db caddy
+
+            # Wait for db readiness
+            docker compose exec -T db sh -lc 'until pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do sleep 2; done'
+
+            # Run migrations in a one-off container (doesn't require app to be healthy)
+            docker compose run --rm app npx prisma migrate deploy
+
+            # Now start the app
+            docker compose up -d app
 
             docker image prune -f

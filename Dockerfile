@@ -1,21 +1,30 @@
-FROM node:20-bookworm-slim AS deps
+# ---------- build stage ----------
+FROM node:20-bookworm-slim AS build
 WORKDIR /app
+
 COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM deps AS build
-WORKDIR /app
 COPY . .
-RUN npm run build
-RUN npx prisma generate
 
-FROM node:20-bookworm-slim AS runner
+# Generate Prisma client + build the app
+RUN npx prisma generate
+RUN npm run build
+
+# ---------- runtime stage ----------
+FROM node:20-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
-COPY --from=deps /app/node_modules ./node_modules
+
+# Install only production deps
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copy the built server + prisma schema + generated client artifacts
 COPY --from=build /app/build ./build
-COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+
 EXPOSE 3000
 CMD ["npm", "run", "start"]
