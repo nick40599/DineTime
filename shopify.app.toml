@@ -26,5 +26,6 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [ 
-    https://test.dinetime.trophycommerce.com/api/auth
+    "https://test.dinetime.trophycommerce.com/auth/callback",
+    "https://test.dinetime.trophycommerce.com/api/auth"
   ]
