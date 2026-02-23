@@ -2,7 +2,7 @@
 
 client_id = "e5520c625fae8bbeda916c7045caa768"
 name = "dine-time"
-application_url = "https://example.com"
+application_url = "https://test.dinetime.trophycommerce.com"
 embedded = true
 
 [build]
@@ -16,4 +16,7 @@ api_version = "2026-04"
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ 
+    "https://test.dinetime.trophycommerce.com/auth/callback",
+    "https://test.dinetime.trophycommerce.com/api/auth"
+    ]
