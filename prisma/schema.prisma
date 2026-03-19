@@ -16,37 +16,46 @@ datasource db {
 }
 
 model Session {
-  id                  String    @id
-  shop                String
-  state               String
-  isOnline            Boolean   @default(false)
-  scope               String?
-  expires             DateTime?
-  accessToken         String
-  userId              BigInt?
-  firstName           String?
-  lastName            String?
-  email               String?
-  accountOwner        Boolean   @default(false)
-  locale              String?
-  collaborator        Boolean?  @default(false)
-  emailVerified       Boolean?  @default(false)
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
   refreshToken        String?
   refreshTokenExpires DateTime?
 }
 
 model Modifications {
-  id        Int      @id @default(autoincrement())
-  title     String
-  shop      String
-  productId String
-  createdAt DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  title         String
+  productId     Int
+  createdAt     DateTime @default(now())
 }
 
 model Employee {
-  id        Int      @id @default(autoincrement())
-  position  String
-  shop      String
-  pin       Int
-  createdAt DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  position      String
+  pin           Int
+  hoursWorked   Float
+  createdAt     DateTime @default(now())
+}
+
+model ItemCategory {
+  id            Int     @id @default(autoincrement())
+  categoryName  String
+  maxNumItems   Int
+  printerId     Int
+  productId     Int
+  createdAt     DateTime @default(now())
+
 }
