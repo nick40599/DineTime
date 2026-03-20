@@ -44,9 +44,12 @@ model Modifications {
 
 model Employee {
   id            Int      @id @default(autoincrement())
+  firstName     String
+  lastName      String
   position      String
   pin           Int
   hoursWorked   Float
+  hourlyRate    Float
   createdAt     DateTime @default(now())
 }
 
