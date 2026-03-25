@@ -34,31 +34,210 @@ model Session {
   refreshToken        String?
   refreshTokenExpires DateTime?
 }
-
+//Stores menu item modifier records you already have, like add-ons or option
+//changes tied to a product. I left it mostly alone and only scoped it by shop.
 model Modifications {
   id            Int      @id @default(autoincrement())
+  shop          String
   title         String
   productId     Int
   createdAt     DateTime @default(now())
-}
 
-model Employee {
-  id            Int      @id @default(autoincrement())
-  firstName     String
-  lastName      String
-  position      String
-  pin           Int
-  hoursWorked   Float
-  hourlyRate    Float
-  createdAt     DateTime @default(now())
+  @@index([shop])
 }
-
+//Stores menu categories for products, like appetizers, entrees, beer, liquor,
+//or soda. The added salesBucket lets the app know whether a category counts
+//toward food sales, drink sales, or neither for reporting.
 model ItemCategory {
-  id            Int     @id @default(autoincrement())
+  id            Int               @id @default(autoincrement())
+  shop          String
   categoryName  String
   maxNumItems   Int
   printerId     Int
   productId     Int
-  createdAt     DateTime @default(now())
+  salesBucket   ItemSalesBucket   @default(OTHER)
+  createdAt     DateTime          @default(now())
 
+  transactions  ShiftTransaction[]
+  voids         ShiftVoid[]
+
+  @@index([shop])
+  @@unique([shop, id])
+  @@unique([shop, categoryName])
+}
+//Stores the person who works at the restaurant. This is the staff member record
+//itself, not what they are being paid on a given shift.
+model Employee {
+  id               Int                @id @default(autoincrement())
+  shop             String
+  firstName        String
+  lastName         String
+  pin              Int
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  shifts           Shift[]
+  allowedPositions EmployeePosition[]
+
+  @@index([shop])
+  @@unique([shop, id])
+  @@unique([shop, pin])
+}
+// Stores a role someone can work, like Server, Bartender, or Host. This is
+// where the hourly pay rate for that role lives, and optionally a commission
+// rate if that role uses one.
+model Position {
+  id                Int                @id @default(autoincrement())
+  shop              String
+  name              String
+  hourlyRate        Decimal            @db.Decimal(10, 2)
+  tipCommissionRate Decimal?           @db.Decimal(5, 2)
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  shifts            Shift[]
+  allowedEmployees  EmployeePosition[]
+
+  @@index([shop])
+  @@unique([shop, id])
+  @@unique([shop, name])
+}
+// This is the join table between employees and positions. It answers “which
+// positions is this employee allowed to clock in as?”
+model EmployeePosition {
+  shop              String
+  employeeId        Int
+  positionId        Int
+  createdAt         DateTime           @default(now())
+
+  employee          Employee           @relation(fields: [shop, employeeId], references: [shop, id], onDelete: Cascade)
+  position          Position           @relation(fields: [shop, positionId], references: [shop, id], onDelete: Cascade)
+
+  @@id([shop, employeeId, positionId])
+  @@index([shop])
+  @@index([shop, positionId])
+}
+// Stores one clock-in/clock-out work session. If someone works as a server in
+// the morning and bartender at night, that would be two different shift
+// records.
+model Shift {
+  id                Int                @id @default(autoincrement())
+  shop              String
+  employeeId        Int
+  positionId        Int
+  clockIn           DateTime
+  clockOut          DateTime?
+  hourlyRateAtTime  Decimal            @db.Decimal(10, 2)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  employee          Employee           @relation(fields: [shop, employeeId], references: [shop, id], onDelete: Cascade)
+  position          Position           @relation(fields: [shop, positionId], references: [shop, id], onDelete: Restrict)
+  report            ShiftReport?
+
+  @@index([shop])
+  @@unique([shop, id])
+  @@index([shop, employeeId])
+  @@index([shop, positionId])
+  @@index([shop, clockIn])
+}
+// Stores the end-of-shift summary for a single shift. This is where totals like
+// sales, food sales, drink sales, cash collected, tips, and cash owed live.
+model ShiftReport {
+  id                   Int                @id @default(autoincrement())
+  shop                 String
+  shiftId              Int
+
+  totalSales           Decimal            @db.Decimal(10, 2) @default(0)
+  foodSales            Decimal            @db.Decimal(10, 2) @default(0)
+  drinkSales           Decimal            @db.Decimal(10, 2) @default(0)
+
+  cashCollected        Decimal            @db.Decimal(10, 2) @default(0)
+  cashPaidOut          Decimal            @db.Decimal(10, 2) @default(0)
+  cashTips             Decimal            @db.Decimal(10, 2) @default(0)
+  creditCardTips       Decimal            @db.Decimal(10, 2) @default(0)
+  tipCommissionAmount  Decimal            @db.Decimal(10, 2) @default(0)
+  cashOwed             Decimal            @db.Decimal(10, 2) @default(0)
+
+  notes                String?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  shift                Shift              @relation(fields: [shop, shiftId], references: [shop, id], onDelete: Cascade)
+  transactions         ShiftTransaction[]
+  voids                ShiftVoid[]
+
+  @@index([shop])
+  @@unique([shop, id])
+  @@unique([shop, shiftId])
+}
+// Stores individual money-related entries connected to a shift report. That can
+// include sales, tips, payouts, cash drops, or adjustments.
+model ShiftTransaction {
+  id                   Int                @id @default(autoincrement())
+  shop                 String
+  shiftReportId        Int
+  itemCategoryId       Int?
+  kind                 TransactionKind
+  paymentMethod        PaymentMethod?
+  reference            String?
+  amount               Decimal            @db.Decimal(10, 2)
+  happenedAt           DateTime           @default(now())
+  notes                String?
+
+  shiftReport          ShiftReport        @relation(fields: [shop, shiftReportId], references: [shop, id], onDelete: Cascade)
+  itemCategory         ItemCategory?      @relation(fields: [shop, itemCategoryId], references: [shop, id], onDelete: SetNull)
+
+  @@index([shop])
+  @@index([shop, shiftReportId])
+  @@index([shop, kind])
+  @@index([shop, itemCategoryId])
+}
+// Stores individual void events for a shift report. This lets you track voided
+// items or voided tabs separately from normal sales activity.
+model ShiftVoid {
+  id                   Int                @id @default(autoincrement())
+  shop                 String
+  shiftReportId        Int
+  itemCategoryId       Int?
+  kind                 VoidKind
+  reference            String?
+  amount               Decimal?           @db.Decimal(10, 2)
+  reason               String?
+  happenedAt           DateTime           @default(now())
+
+  shiftReport          ShiftReport        @relation(fields: [shop, shiftReportId], references: [shop, id], onDelete: Cascade)
+  itemCategory         ItemCategory?      @relation(fields: [shop, itemCategoryId], references: [shop, id], onDelete: SetNull)
+
+  @@index([shop])
+  @@index([shop, shiftReportId])
+  @@index([shop, kind])
+  @@index([shop, itemCategoryId])
+}
+// An enum that labels what kind of transaction a ShiftTransaction is, like
+// sale, tip, payout, or adjustment
+enum TransactionKind {
+  SALE
+  TIP
+  PAYOUT
+  CASH_DROP
+  ADJUSTMENT
+}
+// An enum that says whether a transaction used cash or card.
+enum PaymentMethod {
+  CASH
+  CARD
+}
+// An enum that says whether the void was for a single item or a whole tab.
+enum VoidKind {
+  ITEM
+  TAB
+}
+// An enum used by ItemCategory to classify a category as FOOD, DRINK, or OTHER so reporting can group sales correctly.
+enum ItemSalesBucket {
+  FOOD
+  DRINK
+  OTHER
 }
