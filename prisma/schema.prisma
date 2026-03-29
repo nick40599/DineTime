@@ -82,7 +82,7 @@ model Employee {
   barMenuAccess     Boolean  @default(false)
   hourlyClockAccess Boolean  @default(true)
   adminAccess       Boolean  @default(false)
-  isActive          Boolean  @default(true)
+  isActive          Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
