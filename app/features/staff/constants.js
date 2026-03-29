@@ -1,20 +1,20 @@
-export const POSITION_OPTIONS = [
-  "Server",
-  "Bartender",
-  "Manager",
-  "Hourly Worker",
-  "Host",
-  "Cook",
-  "Cashier",
+export const ACCESS_FIELDS = [
+  { name: "serverMenuAccess", label: "Server Menu Access" },
+  { name: "barMenuAccess", label: "Bar Menu Access" },
+  { name: "hourlyClockAccess", label: "Hourly Clock-In/Clock-Out Access" },
+  { name: "adminAccess", label: "Admin Access" },
 ];
 
 export const EMPTY_FORM = {
   firstName: "",
   lastName: "",
-  position: POSITION_OPTIONS[0],
   pin: "",
   hoursWorked: "0",
-  hourlyRate: "0",
+  hourlyRate: "",
+  serverMenuAccess: false,
+  barMenuAccess: false,
+  hourlyClockAccess: false,
+  adminAccess: false,
 };
 
 export const panelStyle = {
@@ -39,6 +39,20 @@ export const inputStyle = {
   border: "1px solid #c9cccf",
   borderRadius: "0.5rem",
   boxSizing: "border-box",
+};
+
+export const checkboxGroupStyle = {
+  display: "grid",
+  gap: "0.625rem",
+  padding: "0.875rem",
+  border: "1px solid #c9cccf",
+  borderRadius: "0.5rem",
+};
+
+export const checkboxLabelStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: "0.5rem",
 };
 
 export const messageStyle = (ok) => ({

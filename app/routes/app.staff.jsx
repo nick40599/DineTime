@@ -8,9 +8,10 @@ import { messageStyle, panelStyle } from "../features/staff/constants";
 import { getEmployeePayload } from "../features/staff/staff.server";
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
 
   const employees = await prisma.employee.findMany({
+    where: { shop: session.shop },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }, { id: "asc" }],
   });
 
@@ -18,7 +19,7 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
-  await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
 
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
@@ -33,7 +34,10 @@ export const action = async ({ request }) => {
       }
 
       const employee = await prisma.employee.create({
-        data: payload.data,
+        data: {
+          ...payload.data,
+          shop: session.shop,
+        },
       });
 
       return {
@@ -54,7 +58,12 @@ export const action = async ({ request }) => {
       }
 
       await prisma.employee.update({
-        where: { id: employeeId },
+        where: {
+          shop_id: {
+            shop: session.shop,
+            id: employeeId,
+          },
+        },
         data: payload.data,
       });
 
@@ -70,7 +79,12 @@ export const action = async ({ request }) => {
       }
 
       await prisma.employee.delete({
-        where: { id: employeeId },
+        where: {
+          shop_id: {
+            shop: session.shop,
+            id: employeeId,
+          },
+        },
       });
 
       return {
@@ -85,6 +99,13 @@ export const action = async ({ request }) => {
       return {
         ok: false,
         message: "That employee no longer exists in the database.",
+      };
+    }
+
+    if (error?.code === "P2002") {
+      return {
+        ok: false,
+        message: "An employee with that PIN already exists for this shop.",
       };
     }
 
@@ -224,7 +245,20 @@ export default function StaffPage() {
                       <strong>Last Name:</strong> {selectedEmployee.lastName}
                     </div>
                     <div>
-                      <strong>Position:</strong> {selectedEmployee.position}
+                      <strong>Server Menu Access:</strong>{" "}
+                      {selectedEmployee.serverMenuAccess ? "Yes" : "No"}
+                    </div>
+                    <div>
+                      <strong>Bar Menu Access:</strong>{" "}
+                      {selectedEmployee.barMenuAccess ? "Yes" : "No"}
+                    </div>
+                    <div>
+                      <strong>Hourly Clock Access:</strong>{" "}
+                      {selectedEmployee.hourlyClockAccess ? "Yes" : "No"}
+                    </div>
+                    <div>
+                      <strong>Admin Access:</strong>{" "}
+                      {selectedEmployee.adminAccess ? "Yes" : "No"}
                     </div>
                     <div>
                       <strong>PIN:</strong> {selectedEmployee.pin}

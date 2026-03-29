@@ -1,7 +1,9 @@
 /* eslint-disable react/prop-types */
 import {
+  ACCESS_FIELDS,
   EMPTY_FORM,
-  POSITION_OPTIONS,
+  checkboxGroupStyle,
+  checkboxLabelStyle,
   fieldGridStyle,
   inputStyle,
 } from "./constants";
@@ -35,10 +37,13 @@ export function EmployeeFormFields({ employee }) {
     ? {
         firstName: employee.firstName,
         lastName: employee.lastName,
-        position: employee.position,
         pin: String(employee.pin),
-        hoursWorked: String(employee.hoursWorked),
+        hoursWorked: String(employee.hoursWorked ?? 0),
         hourlyRate: String(employee.hourlyRate),
+        serverMenuAccess: Boolean(employee.serverMenuAccess),
+        barMenuAccess: Boolean(employee.barMenuAccess),
+        hourlyClockAccess: Boolean(employee.hourlyClockAccess),
+        adminAccess: Boolean(employee.adminAccess),
       }
     : EMPTY_FORM;
 
@@ -64,25 +69,6 @@ export function EmployeeFormFields({ employee }) {
           required
           style={inputStyle}
         />
-      </label>
-
-      <label>
-        Position
-        <select
-          name="position"
-          defaultValue={defaults.position}
-          required
-          style={inputStyle}
-        >
-          {POSITION_OPTIONS.map((position) => (
-            <option key={position} value={position}>
-              {position}
-            </option>
-          ))}
-          {!POSITION_OPTIONS.includes(defaults.position) ? (
-            <option value={defaults.position}>{defaults.position}</option>
-          ) : null}
-        </select>
       </label>
 
       <label>
@@ -120,9 +106,25 @@ export function EmployeeFormFields({ employee }) {
           min="0"
           step="0.01"
           defaultValue={defaults.hourlyRate}
+          required
           style={inputStyle}
         />
       </label>
+
+      <fieldset style={checkboxGroupStyle}>
+        <legend>Menu and Access Permissions</legend>
+        {ACCESS_FIELDS.map((field) => (
+          <label key={field.name} style={checkboxLabelStyle}>
+            <input
+              name={field.name}
+              type="checkbox"
+              value="true"
+              defaultChecked={defaults[field.name]}
+            />
+            <span>{field.label}</span>
+          </label>
+        ))}
+      </fieldset>
     </div>
   );
 }
