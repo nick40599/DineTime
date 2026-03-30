@@ -1,3 +1,14 @@
+import { boundary } from "@shopify/shopify-app-react-router/server";
+import { authenticate } from "../shopify.server";
+import { requireAdminPosAccess } from "../admin-pos-access.server";
+
+export const loader = async ({ request }) => {
+  const { session } = await authenticate.admin(request);
+  await requireAdminPosAccess(session.shop);
+
+  return null;
+};
+
 export default function MenuPage() {
   return (
     <s-page heading="Menu">
@@ -15,3 +26,7 @@ export default function MenuPage() {
     </s-page>
   );
 }
+
+export const headers = (headersArgs) => {
+  return boundary.headers(headersArgs);
+};

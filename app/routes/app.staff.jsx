@@ -1,25 +1,34 @@
 import { useEffect, useState } from "react";
-import { useActionData, useLoaderData } from "react-router";
+import { Form, useActionData, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import { EmployeeFormFields, EmployeeSelect } from "../features/staff/components";
 import { messageStyle, panelStyle } from "../features/staff/constants";
 import { getEmployeePayload } from "../features/staff/staff.server";
+import { requireAdminPosAccess } from "../admin-pos-access.server";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
+  await requireAdminPosAccess(session.shop);
 
   const employees = await prisma.employee.findMany({
     where: { shop: session.shop },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }, { id: "asc" }],
   });
 
-  return { employees };
+  const serializedEmployees = employees.map((employee) => ({
+    ...employee,
+    hoursWorked: employee.hoursWorked.toString(),
+    hourlyRate: employee.hourlyRate.toString(),
+  }));
+
+  return { employees: serializedEmployees };
 };
 
 export const action = async ({ request }) => {
   const { session } = await authenticate.admin(request);
+  await requireAdminPosAccess(session.shop);
 
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
@@ -163,13 +172,13 @@ export default function StaffPage() {
         {mode === "create" ? (
           <div style={panelStyle}>
             <h3 style={{ marginTop: 0 }}>Create Employee</h3>
-            <form method="post">
+            <Form method="post">
               <input type="hidden" name="intent" value="create" />
               <EmployeeFormFields />
               <div style={{ marginTop: "1rem" }}>
                 <button type="submit">Save Employee</button>
               </div>
-            </form>
+            </Form>
           </div>
         ) : null}
 
@@ -177,7 +186,7 @@ export default function StaffPage() {
           <div style={panelStyle}>
             <h3 style={{ marginTop: 0 }}>Modify Employee</h3>
             {employees.length ? (
-              <form method="post" key={selectedEmployeeId || "no-selection"}>
+              <Form method="post" key={selectedEmployeeId || "no-selection"}>
                 <input type="hidden" name="intent" value="update" />
                 <EmployeeSelect
                   employees={employees}
@@ -190,7 +199,7 @@ export default function StaffPage() {
                 <div style={{ marginTop: "1rem" }}>
                   <button type="submit">Update Employee</button>
                 </div>
-              </form>
+              </Form>
             ) : (
               <p>No employees found yet.</p>
             )}
@@ -201,7 +210,7 @@ export default function StaffPage() {
           <div style={panelStyle}>
             <h3 style={{ marginTop: 0 }}>Delete Employee</h3>
             {employees.length ? (
-              <form method="post">
+              <Form method="post">
                 <input type="hidden" name="intent" value="delete" />
                 <EmployeeSelect
                   employees={employees}
@@ -215,7 +224,7 @@ export default function StaffPage() {
                   </p>
                 ) : null}
                 <button type="submit">Permanently Delete Employee</button>
-              </form>
+              </Form>
             ) : (
               <p>No employees found yet.</p>
             )}
@@ -264,10 +273,14 @@ export default function StaffPage() {
                       <strong>PIN:</strong> {selectedEmployee.pin}
                     </div>
                     <div>
-                      <strong>Hours Worked:</strong> {selectedEmployee.hoursWorked}
+                      <strong>Hours Worked:</strong>{" "}
+                      {selectedEmployee.hoursWorked?.toString?.() ??
+                        String(selectedEmployee.hoursWorked)}
                     </div>
                     <div>
-                      <strong>Hourly Rate:</strong> {selectedEmployee.hourlyRate}
+                      <strong>Hourly Rate:</strong>{" "}
+                      {selectedEmployee.hourlyRate?.toString?.() ??
+                        String(selectedEmployee.hourlyRate)}
                     </div>
                     <div>
                       <strong>Created At:</strong>{" "}
