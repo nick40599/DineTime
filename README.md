@@ -23,32 +23,6 @@ The employee section is intended to support actions such as creating, modifying,
 - Node.js
 - Docker
 
-## Project Structure
-
-```text
-DineTime/
-├── app/
-│   ├── routes/
-│   │   ├── app.jsx
-│   │   ├── app._index.jsx
-│   │   ├── app.staff.jsx
-│   │   ├── app.menu.jsx
-│   │   ├── auth.login/
-│   │   ├── auth.$.jsx
-│   │   ├── webhooks.app.scopes_update.jsx
-│   │   └── webhooks.app.uninstalled.jsx
-│   ├── db.server.js
-│   ├── shopify.server.js
-│   └── root.jsx
-├── prisma/
-│   └── schema.prisma
-├── public/
-├── extensions/
-├── Dockerfile
-├── package.json
-├── shopify.app.toml
-├── shopify.web.toml
-└── README.md
 
 ## How to Use
 
@@ -88,7 +62,6 @@ This section is intended to help restaurants organize menu-related data directly
 
 DineTime uses Prisma and SQLite for local development. To view or manage the database during development, you can use Prisma Studio:
 
-```bash
 npx prisma studio
 
 ### 5. Test Changes Locally
@@ -98,7 +71,34 @@ As you update the app, the local development server will reload changes. Use you
 ### 6. Prepare for Deployment
 
 Before deploying, make sure the app builds correctly:
-```bash
 npm run build
 
 Then confirm that all required production environment variables are set, including the Shopify API keys, app URL, scopes, and database connection.
+
+
+## Project Structure
+```text
+DineTime/
+├── app/
+│   ├── routes/
+│   │   ├── app.jsx
+│   │   ├── app._index.jsx
+│   │   ├── app.staff.jsx
+│   │   ├── app.menu.jsx
+│   │   ├── auth.login/
+│   │   ├── auth.$.jsx
+│   │   ├── webhooks.app.scopes_update.jsx
+│   │   └── webhooks.app.uninstalled.jsx
+│   ├── db.server.js
+│   ├── shopify.server.js
+│   └── root.jsx
+├── prisma/
+│   └── schema.prisma
+├── public/
+├── extensions/
+├── Dockerfile
+├── package.json
+├── shopify.app.toml
+├── shopify.web.toml
+└── README.md
+
