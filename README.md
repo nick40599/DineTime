@@ -49,3 +49,56 @@ DineTime/
 ├── shopify.app.toml
 ├── shopify.web.toml
 └── README.md
+
+## How to Use
+
+### 1. Open the DineTime App
+
+From the Shopify admin, open the DineTime app. You should see the main app dashboard with navigation options for the app sections.
+
+### 2. Use the Employee Page
+
+Go to the **Employees** section to manage restaurant staff.
+
+The employee page is set up for actions such as:
+
+- Creating a new employee
+- Viewing employee information
+- Modifying employee details
+- Deleting an employee
+
+Employees are stored using the Prisma `Employee` model, which includes the employee position, shop, PIN, and creation date.
+
+### 3. Use the Menu Page
+
+Go to the **Menu** section to manage restaurant menu settings.
+
+The menu page is set up for actions such as:
+
+- Creating a menu
+- Creating menu items
+- Editing menu items
+- Deleting menu items
+- Deleting menus
+- Setting a maximum number of ticket items
+
+This section is intended to help restaurants organize menu-related data directly from the Shopify admin.
+
+### 4. Manage Data Through the Database
+
+DineTime uses Prisma and SQLite for local development. To view or manage the database during development, you can use Prisma Studio:
+
+```bash
+npx prisma studio
+
+### 5. Test Changes Locally
+
+As you update the app, the local development server will reload changes. Use your Shopify development store to test how the app looks and behaves inside the Shopify admin.
+
+### 6. Prepare for Deployment
+
+Before deploying, make sure the app builds correctly:
+```bash
+npm run build
+
+Then confirm that all required production environment variables are set, including the Shopify API keys, app URL, scopes, and database connection.
